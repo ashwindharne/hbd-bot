@@ -79,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     let db = init_database(&config.database_url).await?;
-
+    sqlx::migrate!("../migrations").run(&db).await?;
     let state = AppState { db, config };
 
     let app = Router::new()
@@ -108,11 +108,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/reminders",
             get(get_reminders).post(create_reminder_endpoint),
         )
-        .nest_service("/static", ServeDir::new("web/static"))
+        .nest_service("/static", ServeDir::new(
+            if std::path::Path::new("static").exists() {
+                "static"  // Production (Docker)
+            } else {
+                "web/static"  // Development
+            }
+        ))
         .with_state(state);
 
-    let listener = TcpListener::bind("0.0.0.0:3000").await?;
-    log::info!("Server running on http://0.0.0.0:3000");
+    let listener = TcpListener::bind("0.0.0.0:8080").await?;
+    log::info!("Server running on http://0.0.0.0:8080");
 
     axum::serve(listener, app).await?;
 

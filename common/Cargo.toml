@@ -3,6 +3,9 @@ name = "common"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 sqlx = { version = "0.7", features = [
     "sqlite",

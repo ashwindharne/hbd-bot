@@ -1,0 +1,30 @@
+app = "hbd-bot"        # your Fly app slug
+primary_region = "ewr"
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+DATABASE_URL = "sqlite:///data/db.sqlite?mode=rwc"
+MESSAGE_CENTRAL_CUSTOMER_ID = "C-9933F658E4D54B6"
+MESSAGE_CENTRAL_EMAIL = "ashwindharne@gmail.com"
+RUST_LOG = "debug"
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = "stop"
+auto_start_machines = true
+min_machines_running = 0
+[http_service.concurrency]
+type = "requests"
+soft_limit = 200
+hard_limit = 250
+
+# Persistent volume for SQLite
+[[mounts]]
+source = "data"       # create once: fly volumes create data --region ewr --size 1
+destination = "/data"
+
+[[vm]]
+size = "shared-cpu-1x"
