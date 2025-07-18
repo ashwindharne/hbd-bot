@@ -1,0 +1,6 @@
+[workspace]
+members = ["common", "web", "sms-sweeper"]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

@@ -1,0 +1,28 @@
+[package]
+name = "web"      # or "sweeper"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../common" }
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.8.4", features = ["json"] }
+axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
+serde = { version = "1", features = ["derive"] }
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-rustls",
+    "sqlite",
+    "migrate",
+    "chrono",
+] }
+chrono = { version = "0.4", features = ["serde"] }
+askama = "0.12"
+tower-http = { version = "0.6", features = ["fs"] }
+serde_json = "1.0.140"
+jsonwebtoken = "9.3"
+time = "0.3"
+log = "0.4"
+env_logger = "0.11"
+aes-gcm = "0.10"
+base64 = "0.22"
+sha2 = "0.10"

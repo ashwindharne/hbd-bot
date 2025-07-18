@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sign in or sign up - HBD Bot</title>
+        <link rel="stylesheet" href="/static/css/login.css" />
+    </head>
+    <body>
+        <div class="login-container">
+            <h1>Sign in or sign up</h1>
+
+            <form id="loginForm">
+                <div class="phone-input-group">
+                    <div class="country-selector">
+                        <div class="flag flag-us"></div>
+                        <span class="country-code">+1</span>
+                    </div>
+                    <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        placeholder="Phone number"
+                        class="phone-input"
+                        maxlength="10"
+                        required
+                    />
+                </div>
+                <div id="phoneError" class="error-message hidden"></div>
+
+                <div id="smsMessage" class="sms-message hidden">
+                    We sent <span id="formattedPhoneNumber"></span> a code via SMS
+                </div>
+
+                <div id="verificationSection" class="verification-section hidden">
+                    <h3>Verification Code</h3>
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        maxlength="6"
+                        class="otp-input"
+                        placeholder="Enter code"
+                    />
+                    <div id="otpError" class="error-message hidden"></div>
+                    <div class="resend-section">
+                        <span id="resendText"
+                            >Didn't receive a code? Resend it in
+                            <span id="resendTimer"></span>s</span
+                        >
+                        <span id="resendLink" class="hidden"
+                            >Didn't receive a code?
+                            <a href="#" class="resend-link">Resend it</a></span
+                        >
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="submit-btn" disabled>Login</button>
+
+                <div id="result" class="result-message"></div>
+            </form>
+
+            <div class="terms-section hidden" id="termsSection">
+                By clicking I agree, you agree to our <a href="#" id="termsLink">Terms</a> and
+                <a href="#" id="privacyLink">Privacy Policy</a> and consent to receive text messages
+                from us and hosts. Message and data rates apply. Text HELP for help and STOP to
+                cancel.
+            </div>
+        </div>
+
+        <script src="/static/js/login.js"></script>
+    </body>
+</html>

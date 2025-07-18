@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}HBD Bot - Dashboard{% endblock %}
+
+{% block nav %}
+    <a href="/logout" class="logout-btn">Logout</a>
+{% endblock %}
+
+{% block content %}
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h3>Birthday Reminders</h3>
+                        <a href="/add" class="add-btn">+</a>
+                    </div>
+                    {% if reminders.is_empty() %}
+                        <p>No birthday reminders yet. <a href="/add">Add your first birthday reminder!</a></p>
+                    {% else %}
+                        <div class="reminders-list">
+                            {% for reminder in reminders %}
+                                <div class="reminder-card">
+                                    <div class="reminder-header">
+                                        <div class="reminder-name">
+                                            <h4>{{ reminder.name }}</h4>
+                                            <a href="/edit?id={{ reminder.id }}" class="edit-link">Edit</a>
+                                        </div>
+                                        <span class="days-until">
+                                            {% if reminder.days_until_birthday == 0 %}
+                                                🎉 Today!
+                                            {% else if reminder.days_until_birthday == 1 %}
+                                                Tomorrow
+                                            {% else %}
+                                                {{ reminder.days_until_birthday }} days
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="reminder-details">
+                                        <p><strong>Birthday:</strong> {{ reminder.birthdate }}</p>
+                                        <p><strong>Turning:</strong> {{ reminder.age_turning }} years old</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+{% endblock %}

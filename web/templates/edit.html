@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Birthday - HBD Bot{% endblock %}
+
+{% block nav %}
+    <a href="/logout" class="logout-btn">Logout</a>
+{% endblock %}
+
+{% block content %}
+                <div class="edit-birthday-section">
+                    <h2>Edit Birthday</h2>
+                    
+                    {% if !error_message.is_empty() %}
+                        <div class="error-message">{{ error_message }}</div>
+                    {% endif %}
+                    
+                    <form id="editBirthdayForm" method="POST" action="/edit">
+                        <input type="hidden" name="reminder_id" value="{{ reminder_id }}" />
+                        
+                        <div class="form-group">
+                            <label for="name">Friend's Name</label>
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                value="{{ name }}" 
+                                placeholder="Enter friend's name"
+                                required
+                            />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthdate">Birthday</label>
+                            <input 
+                                type="date" 
+                                id="birthdate" 
+                                name="birthdate" 
+                                value="{{ birthdate }}" 
+                                required
+                            />
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">Update Birthday</button>
+                            <a href="/" class="cancel-btn">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+{% endblock %}
