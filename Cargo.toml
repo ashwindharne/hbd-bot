@@ -1,5 +1,6 @@
 [workspace]
 members = ["common", "web", "sms-sweeper"]
+resolver = "2"
 
 [profile.release]
 lto = "thin"

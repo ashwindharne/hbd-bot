@@ -44,7 +44,7 @@ pub struct MessageCentralSendOTPData {
     pub mobile_number: String,
     pub response_code: String,
     pub error_message: Option<String>,
-    pub timeout: String,  // Changed from i32 to String since API returns "60.0"
+    pub timeout: String, // Changed from i32 to String since API returns "60.0"
     pub transaction_id: String,
 }
 
@@ -59,13 +59,32 @@ struct MessageCentralVerifyOTPResponse {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct MessageCentralVerifyOTPData {
-    verification_id: i64,  // Changed from String to i64 since API returns integer
+    verification_id: i64, // Changed from String to i64 since API returns integer
     mobile_number: String,
     response_code: String,
     verification_status: String,
-    error_message: Option<String>,  // Added missing field
+    error_message: Option<String>, // Added missing field
     auth_token: Option<String>,
     transaction_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MessageCentralSendSMSData {
+    verification_id: i64, // Changed from String to i64 since API returns integer
+    mobile_number: String,
+    response_code: String,
+    error_message: Option<String>, // Added missing field
+    auth_token: Option<String>,
+    transaction_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MessageCentralSendSMSResponse {
+    response_code: i32,
+    message: String,
+    data: MessageCentralSendSMSData,
 }
 
 impl MessageCentralClient {
@@ -129,7 +148,7 @@ impl MessageCentralClient {
             ("mobileNumber", phone_number.as_str()),
             ("flowType", "SMS"),
         ];
-        
+
         let response = self
             .client
             .post(&url)
@@ -145,9 +164,14 @@ impl MessageCentralClient {
             message: format!("Failed to read response text: {}", e),
         })?;
 
-        let send_otp_response = serde_json::from_str::<MessageCentralSendOTPResponse>(&response_text)
-            .map_err(|e| MessageCentralError {
-                message: format!("Failed to parse send OTP response: {}. Raw response: {}", e, response_text),
+        let send_otp_response =
+            serde_json::from_str::<MessageCentralSendOTPResponse>(&response_text).map_err(|e| {
+                MessageCentralError {
+                    message: format!(
+                        "Failed to parse send OTP response: {}. Raw response: {}",
+                        e, response_text
+                    ),
+                }
             })?;
         Ok(send_otp_response.data)
     }
@@ -163,7 +187,7 @@ impl MessageCentralClient {
             ("verificationId", verification_id.as_str()),
             ("code", code.as_str()),
         ];
-        
+
         let response = self
             .client
             .get(&url)
@@ -179,10 +203,15 @@ impl MessageCentralClient {
             message: format!("Failed to read response text: {}", e),
         })?;
 
-        let verify_otp_response = serde_json::from_str::<MessageCentralVerifyOTPResponse>(&response_text)
-            .map_err(|e| MessageCentralError {
-                message: format!("Failed to parse verify OTP response: {}. Raw response: {}", e, response_text),
-            })?;
+        let verify_otp_response = serde_json::from_str::<MessageCentralVerifyOTPResponse>(
+            &response_text,
+        )
+        .map_err(|e| MessageCentralError {
+            message: format!(
+                "Failed to parse verify OTP response: {}. Raw response: {}",
+                e, response_text
+            ),
+        })?;
 
         if verify_otp_response.data.verification_status == "VERIFICATION_COMPLETED" {
             Ok(())
@@ -191,5 +220,65 @@ impl MessageCentralClient {
                 message: "OTP verification failed".to_string(),
             })
         }
+    }
+
+    pub async fn send_sms(
+        &self,
+        auth_token: String,
+        phone_number: String,
+        message: String,
+    ) -> Result<MessageCentralSendSMSData, MessageCentralError> {
+        let url = format!("{}/verification/v3/send", API_BASE_URL);
+        let query_params = [
+            ("type", "SMS"),
+            ("countryCode", "1"),
+            ("flowType", "SMS"),
+            ("messageType", "TRANSACTION"),
+            ("senderId", "UTOMOB"),
+            ("mobileNumber", phone_number.as_str()),
+            ("message", message.as_str()),
+        ];
+
+        let response = self
+            .client
+            .get(&url)
+            .query(&query_params)
+            .header("authToken", auth_token)
+            .send()
+            .await
+            .map_err(|e| MessageCentralError {
+                message: format!("Failed to send SMS: {}", e),
+            })?;
+
+        let status = response.status();
+        let headers = response.headers().clone();
+        eprintln!(
+            "SMS API Response - Status: {}, Headers: {:?}",
+            status, headers
+        );
+
+        let response_text = response.text().await.map_err(|e| MessageCentralError {
+            message: format!("Failed to read response text: {}", e),
+        })?;
+
+        eprintln!("SMS API Raw Response: '{}'", response_text);
+
+        if !status.is_success() {
+            return Err(MessageCentralError {
+                message: format!(
+                    "SMS API returned error status: {}. Raw response: '{}'",
+                    status, response_text
+                ),
+            });
+        }
+
+        let send_sms_response = serde_json::from_str::<MessageCentralSendSMSData>(&response_text)
+            .map_err(|e| MessageCentralError {
+            message: format!(
+                "Failed to parse send SMS response: {}. Raw response: {}",
+                e, response_text
+            ),
+        })?;
+        Ok(send_sms_response)
     }
 }

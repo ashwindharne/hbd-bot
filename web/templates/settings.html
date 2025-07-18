@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - HBD Bot{% endblock %}
+
+{% block nav %}
+    <a href="/logout" class="logout-btn">Logout</a>
+{% endblock %}
+
+{% block content %}
+    <div class="settings-section">
+        <h2>Settings</h2>
+        
+        {% if !error_message.is_empty() %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+        
+        {% if !success_message.is_empty() %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+        
+        <form method="POST" action="/settings">
+            <div class="form-group">
+                <label for="days_notice">Days in Advance to Send Reminders</label>
+                <input 
+                    type="range" 
+                    id="days_notice" 
+                    name="days_notice" 
+                    min="1" 
+                    max="14" 
+                    value="{{ days_notice }}"
+                    class="slider"
+                    oninput="this.nextElementSibling.value = this.value"
+                />
+                <output>{{ days_notice }}</output>
+                <div class="slider-labels">
+                    <span>1 day</span>
+                    <span>14 days</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="send_hour">Preferred Time to Receive Reminders</label>
+                <input 
+                    type="range" 
+                    id="send_hour" 
+                    name="send_hour" 
+                    min="0" 
+                    max="23" 
+                    value="{{ send_hour }}"
+                    class="slider"
+                    oninput="this.nextElementSibling.value = formatHour(this.value)"
+                />
+                <output>{{ send_hour }}:00</output>
+                <div class="slider-labels">
+                    <span>12:00 AM</span>
+                    <span>11:00 PM</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="iana_tz">Timezone</label>
+                <select id="iana_tz" name="iana_tz">
+                    <option value="America/New_York" {% if iana_tz == "America/New_York" %}selected{% endif %}>Eastern Time (New York)</option>
+                    <option value="America/Chicago" {% if iana_tz == "America/Chicago" %}selected{% endif %}>Central Time (Chicago)</option>
+                    <option value="America/Denver" {% if iana_tz == "America/Denver" %}selected{% endif %}>Mountain Time (Denver)</option>
+                    <option value="America/Los_Angeles" {% if iana_tz == "America/Los_Angeles" %}selected{% endif %}>Pacific Time (Los Angeles)</option>
+                    <option value="America/Anchorage" {% if iana_tz == "America/Anchorage" %}selected{% endif %}>Alaska Time (Anchorage)</option>
+                    <option value="Pacific/Honolulu" {% if iana_tz == "Pacific/Honolulu" %}selected{% endif %}>Hawaii Time (Honolulu)</option>
+                </select>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">Save Settings</button>
+                <a href="/" class="cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function formatHour(hour) {
+            const h = parseInt(hour);
+            if (h === 0) return "12:00 AM";
+            if (h < 12) return h + ":00 AM";
+            if (h === 12) return "12:00 PM";
+            return (h - 12) + ":00 PM";
+        }
+        
+        // Update output displays on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const sendHourSlider = document.getElementById('send_hour');
+            const sendHourOutput = sendHourSlider.nextElementSibling;
+            sendHourOutput.value = formatHour(sendHourSlider.value);
+        });
+    </script>
+{% endblock %}

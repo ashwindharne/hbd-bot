@@ -3,5 +3,28 @@ name = "sms-sweeper" # or "sweeper"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "sms_sweeper"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sms-sweeper"
+path = "src/main.rs"
+
 [dependencies]
 common = { path = "../common" }
+tokio = { version = "1.0", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.8"
+log = "0.4"
+env_logger = "0.10"
+dotenv = "0.15"
+sqlx = { version = "0.7", features = [
+    "runtime-tokio-rustls",
+    "sqlite",
+    "chrono",
+] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"

@@ -7,7 +7,7 @@ pub struct DbUser {
     pub id: i64,
     pub phone_number: String,
     pub created_at: String,
-    pub last_digest_at: String,
+    pub last_digest_at: Option<String>,
     pub days_notice: i64,
     pub send_hour: i64,
     pub iana_tz: String,
@@ -258,4 +258,49 @@ pub async fn update_reminder(
         created_at: reminder.get("created_at"),
         updated_at: reminder.get("updated_at"),
     })
+}
+
+pub async fn update_user_settings(
+    pool: &SqlitePool,
+    user_id: i64,
+    days_notice: i64,
+    send_hour: i64,
+    iana_tz: &str,
+) -> Result<DbUser, sqlx::Error> {
+    sqlx::query("UPDATE users SET days_notice = ?, send_hour = ?, iana_tz = ? WHERE id = ?")
+        .bind(days_notice)
+        .bind(send_hour)
+        .bind(iana_tz)
+        .bind(user_id)
+        .execute(pool)
+        .await?;
+
+    let user = sqlx::query(
+        "SELECT id, phone_number, created_at, last_digest_at, days_notice, send_hour, iana_tz FROM users WHERE id = ?",
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(DbUser {
+        id: user.get("id"),
+        phone_number: user.get("phone_number"),
+        created_at: user.get("created_at"),
+        last_digest_at: user.get("last_digest_at"),
+        days_notice: user.get("days_notice"),
+        send_hour: user.get("send_hour"),
+        iana_tz: user.get("iana_tz"),
+    })
+}
+
+pub async fn update_user_last_digest_at(
+    pool: &SqlitePool,
+    user_id: i64,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE users SET last_digest_at = CURRENT_TIMESTAMP WHERE id = ?")
+        .bind(user_id)
+        .execute(pool)
+        .await?;
+
+    Ok(())
 }

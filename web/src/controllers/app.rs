@@ -1,16 +1,20 @@
 use askama::Template;
 use axum::{
-    extract::{State, Query},
+    extract::{Query, State},
     response::{Html, Redirect},
     Form,
 };
 use axum_extra::extract::cookie::CookieJar;
-use common::{get_user_by_id, get_reminders_by_user_id, create_reminder, get_reminder_by_id, update_reminder};
+use chrono::{DateTime, NaiveDate};
+use common::{
+    create_reminder, get_reminder_by_id, get_reminders_by_user_id, get_user_by_id, update_reminder,
+};
 use serde::Deserialize;
-use chrono::{NaiveDate, DateTime};
 use std::collections::HashMap;
 
-use crate::controllers::auth::{AppState, AppTemplate, verify_jwt_cookie, convert_reminders_to_display};
+use crate::controllers::auth::{
+    convert_reminders_to_display, verify_jwt_cookie, AppState, AppTemplate,
+};
 
 #[derive(Template)]
 #[template(path = "add.html")]
@@ -53,7 +57,7 @@ pub async fn root(State(state): State<AppState>, jar: CookieJar) -> Result<Html<
     };
 
     // Get user from database
-    let user = match get_user_by_id(&state.db, user_id).await {
+    match get_user_by_id(&state.db, user_id).await {
         Ok(Some(user)) => user,
         Ok(None) => {
             // User not found in database, redirect to login
@@ -75,15 +79,15 @@ pub async fn root(State(state): State<AppState>, jar: CookieJar) -> Result<Html<
     };
 
     // Render the app template with user data and reminders
-    let template = AppTemplate {
-        phone_number: user.phone_number,
-        reminders,
-    };
+    let template = AppTemplate { reminders };
 
     Ok(Html(template.render().unwrap()))
 }
 
-pub async fn add_form(State(state): State<AppState>, jar: CookieJar) -> Result<Html<String>, Redirect> {
+pub async fn add_form(
+    State(state): State<AppState>,
+    jar: CookieJar,
+) -> Result<Html<String>, Redirect> {
     // Verify JWT cookie and get user ID
     match verify_jwt_cookie(&jar, &state.config.jwt_secret) {
         Ok(_) => {
@@ -149,7 +153,8 @@ pub async fn add_birthday(
     };
 
     // Convert to timestamp for database storage
-    let timestamp = parsed_date.and_hms_opt(0, 0, 0)
+    let timestamp = parsed_date
+        .and_hms_opt(0, 0, 0)
         .unwrap()
         .and_utc()
         .timestamp_millis();
@@ -303,7 +308,8 @@ pub async fn update_birthday(
     };
 
     // Convert to timestamp for database storage
-    let timestamp = parsed_date.and_hms_opt(0, 0, 0)
+    let timestamp = parsed_date
+        .and_hms_opt(0, 0, 0)
         .unwrap()
         .and_utc()
         .timestamp_millis();
@@ -312,7 +318,14 @@ pub async fn update_birthday(
     let timestamp_str = timestamp.to_string();
 
     // Update the reminder
-    match update_reminder(&state.db, form.reminder_id, &form.name.trim(), &timestamp_str).await {
+    match update_reminder(
+        &state.db,
+        form.reminder_id,
+        &form.name.trim(),
+        &timestamp_str,
+    )
+    .await
+    {
         Ok(_) => {
             // Success - redirect to dashboard
             Ok(Redirect::to("/"))

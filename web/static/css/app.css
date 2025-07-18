@@ -65,6 +65,17 @@ body {
     color: #495057;
 }
 
+.settings-btn {
+    background: #6c757d;
+    color: white;
+    border: 1px solid #6c757d;
+}
+
+.settings-btn:hover {
+    background: #5a6268;
+    color: white;
+}
+
 .logout-btn {
     background: #dc3545;
     color: white;
@@ -232,16 +243,19 @@ body {
 }
 
 .form-group input[type="text"],
-.form-group input[type="date"] {
+.form-group input[type="date"],
+.form-group select {
     width: 100%;
     padding: 0.75rem;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
+    background-color: white;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
@@ -300,6 +314,74 @@ body {
     border: 1px solid #f5c6cb;
     font-size: 0.9rem;
 }
+
+/* Success messages */
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    border: 1px solid #c3e6cb;
+    font-size: 0.9rem;
+}
+
+/* Settings page styles */
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.5rem;
+    color: #007bff;
+}
+
+/* Slider styles */
+.slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    margin: 0.5rem 0;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #007bff;
+    cursor: pointer;
+    border: none;
+}
+
+.form-group output {
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+    font-weight: 500;
+    color: #007bff;
+    margin-left: 0.5rem;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
 
 /* Responsive design for larger screens */
 @media (min-width: 768px) {

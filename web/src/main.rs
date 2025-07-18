@@ -8,10 +8,10 @@ use axum::{
 use common::{
     create_reminder, create_user as db_create_user, get_all_reminders, get_all_users, init_database,
 };
+use log;
 use serde::{Deserialize, Serialize};
 use tokio::net::TcpListener;
 use tower_http::services::ServeDir;
-use log;
 
 mod controllers;
 
@@ -29,16 +29,16 @@ pub struct Config {
 
 impl Config {
     fn from_env() -> Result<Self, String> {
-        let database_url = env::var("DATABASE_URL")
-            .map_err(|_| "DATABASE_URL environment variable not set")?;
+        let database_url =
+            env::var("DATABASE_URL").map_err(|_| "DATABASE_URL environment variable not set")?;
         let message_central_customer_id = env::var("MESSAGE_CENTRAL_CUSTOMER_ID")
             .map_err(|_| "MESSAGE_CENTRAL_CUSTOMER_ID environment variable not set")?;
         let message_central_email = env::var("MESSAGE_CENTRAL_EMAIL")
             .map_err(|_| "MESSAGE_CENTRAL_EMAIL environment variable not set")?;
         let message_central_password_b64 = env::var("MESSAGE_CENTRAL_PASSWORD_B64")
             .map_err(|_| "MESSAGE_CENTRAL_PASSWORD_B64 environment variable not set")?;
-        let jwt_secret = env::var("JWT_SECRET")
-            .map_err(|_| "JWT_SECRET environment variable not set")?;
+        let jwt_secret =
+            env::var("JWT_SECRET").map_err(|_| "JWT_SECRET environment variable not set")?;
 
         Ok(Config {
             database_url,
@@ -64,30 +64,42 @@ struct Reminder {
     birthdate: i64, // Unix timestamp in milliseconds
 }
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Info)
         .init();
-    
+
     log::info!("Starting HBD Bot Web Server");
-    
+
     // Parse environment variables at startup
     let config = Config::from_env().map_err(|e| {
         log::error!("Failed to parse environment variables: {}", e);
         e
     })?;
-    
+
     let db = init_database(&config.database_url).await?;
 
     let state = AppState { db, config };
 
     let app = Router::new()
         .route("/", get(controllers::app::root))
-        .route("/add", get(controllers::app::add_form).post(controllers::app::add_birthday))
-        .route("/edit", get(controllers::app::edit_form).post(controllers::app::update_birthday))
-        .route("/login", get(controllers::auth::login_page).post(controllers::auth::login))
+        .route(
+            "/add",
+            get(controllers::app::add_form).post(controllers::app::add_birthday),
+        )
+        .route(
+            "/edit",
+            get(controllers::app::edit_form).post(controllers::app::update_birthday),
+        )
+        .route(
+            "/settings",
+            get(controllers::settings::settings_form).post(controllers::settings::update_settings),
+        )
+        .route(
+            "/login",
+            get(controllers::auth::login_page).post(controllers::auth::login),
+        )
         .route("/verify-otp", post(controllers::auth::verify_otp))
         .route("/logout", get(controllers::auth::logout))
         .route("/health", get(health))
@@ -106,8 +118,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-
 
 async fn health() -> Json<serde_json::Value> {
     Json(serde_json::json!({
@@ -193,4 +203,3 @@ async fn create_reminder_endpoint(
 
     Ok(Json(reminder))
 }
-
