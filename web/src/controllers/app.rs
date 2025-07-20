@@ -7,7 +7,8 @@ use axum::{
 use axum_extra::extract::cookie::CookieJar;
 use chrono::{DateTime, NaiveDate};
 use common::{
-    create_reminder, get_reminder_by_id, get_reminders_by_user_id, get_user_by_id, update_reminder,
+    create_reminder, delete_reminder, get_reminder_by_id, get_reminders_by_user_id, get_user_by_id,
+    update_reminder,
 };
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -339,6 +340,61 @@ pub async fn update_birthday(
                 birthdate: form.birthdate,
             };
             Err(Html(template.render().unwrap()))
+        }
+    }
+}
+
+pub async fn delete_reminder_handler(
+    State(state): State<AppState>,
+    jar: CookieJar,
+    Query(params): Query<HashMap<String, String>>,
+) -> Result<Redirect, Redirect> {
+    // Verify JWT cookie and get user ID
+    let user_id = match verify_jwt_cookie(&jar, &state.config.jwt_secret) {
+        Ok(user_id) => user_id,
+        Err(_) => {
+            // Redirect to login if authentication fails
+            return Err(Redirect::to("/login"));
+        }
+    };
+
+    // Get reminder ID from query parameters
+    let reminder_id = match params.get("id").and_then(|id| id.parse::<i64>().ok()) {
+        Some(id) => id,
+        None => {
+            // Invalid or missing ID, redirect to dashboard
+            return Err(Redirect::to("/"));
+        }
+    };
+
+    // Get reminder from database to verify ownership
+    let reminder = match get_reminder_by_id(&state.db, reminder_id).await {
+        Ok(Some(reminder)) => reminder,
+        Ok(None) => {
+            // Reminder not found, redirect to dashboard
+            return Err(Redirect::to("/"));
+        }
+        Err(_) => {
+            // Database error, redirect to dashboard
+            return Err(Redirect::to("/"));
+        }
+    };
+
+    // Check that reminder belongs to authenticated user
+    if reminder.user_id != user_id {
+        // Unauthorized access, redirect to dashboard
+        return Err(Redirect::to("/"));
+    }
+
+    // Delete the reminder
+    match delete_reminder(&state.db, reminder_id).await {
+        Ok(_) => {
+            // Success - redirect to dashboard
+            Ok(Redirect::to("/"))
+        }
+        Err(_) => {
+            // Database error, redirect to dashboard
+            Err(Redirect::to("/"))
         }
     }
 }

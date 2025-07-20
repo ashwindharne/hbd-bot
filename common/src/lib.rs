@@ -1,6 +1,7 @@
 use sqlx::{migrate::MigrateDatabase, sqlite::SqlitePool, Row, Sqlite};
 
 pub mod message_central;
+pub mod twilio;
 pub use message_central::MessageCentralSendOTPData;
 
 pub struct DbUser {
@@ -153,11 +154,20 @@ pub async fn get_reminders_by_user_id(
     pool: &SqlitePool,
     user_id: i64,
 ) -> Result<Vec<DbReminder>, sqlx::Error> {
-    let reminders =
-        sqlx::query("SELECT id, user_id, name, birthdate, created_at, updated_at FROM reminders WHERE user_id = ?")
-            .bind(user_id)
-            .fetch_all(pool)
-            .await?;
+    let reminders = sqlx::query(
+        "SELECT id, user_id, name, birthdate, created_at, updated_at 
+         FROM reminders 
+         WHERE user_id = ? 
+         ORDER BY 
+           CASE 
+             WHEN strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch')) >= strftime('%m-%d', 'now')
+             THEN strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch'))
+             ELSE '13' || strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch'))
+           END"
+    )
+    .bind(user_id)
+    .fetch_all(pool)
+    .await?;
 
     let reminders: Vec<DbReminder> = reminders
         .into_iter()
@@ -299,6 +309,15 @@ pub async fn update_user_last_digest_at(
 ) -> Result<(), sqlx::Error> {
     sqlx::query("UPDATE users SET last_digest_at = CURRENT_TIMESTAMP WHERE id = ?")
         .bind(user_id)
+        .execute(pool)
+        .await?;
+
+    Ok(())
+}
+
+pub async fn delete_reminder(pool: &SqlitePool, reminder_id: i64) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM reminders WHERE id = ?")
+        .bind(reminder_id)
         .execute(pool)
         .await?;
 

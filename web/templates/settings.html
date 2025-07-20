@@ -50,7 +50,7 @@
                     class="slider"
                     oninput="this.nextElementSibling.value = formatHour(this.value)"
                 />
-                <output>{{ send_hour }}:00</output>
+                <output id="send_hour_display"></output>
                 <div class="slider-labels">
                     <span>12:00 AM</span>
                     <span>11:00 PM</span>
@@ -88,7 +88,7 @@
         // Update output displays on page load
         document.addEventListener('DOMContentLoaded', function() {
             const sendHourSlider = document.getElementById('send_hour');
-            const sendHourOutput = sendHourSlider.nextElementSibling;
+            const sendHourOutput = document.getElementById('send_hour_display');
             sendHourOutput.value = formatHour(sendHourSlider.value);
         });
     </script>

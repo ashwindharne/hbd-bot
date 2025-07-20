@@ -179,7 +179,7 @@ pub fn convert_reminders_to_display(reminders: Vec<DbReminder>) -> Vec<ReminderD
                 Ok((days_until, age_turning)) => {
                     // Convert timestamp to formatted date string for display
                     let formatted_date = match DateTime::from_timestamp_millis(reminder.birthdate) {
-                        Some(dt) => dt.naive_utc().date().format("%Y-%m-%d").to_string(),
+                        Some(dt) => dt.naive_utc().date().format("%-m/%-d").to_string(),
                         None => "Unknown".to_string(),
                     };
 

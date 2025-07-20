@@ -2,7 +2,7 @@ use axum::{
     extract::State,
     http::StatusCode,
     response::Json,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use common::{
@@ -93,6 +93,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             get(controllers::app::edit_form).post(controllers::app::update_birthday),
         )
         .route(
+            "/reminder",
+            delete(controllers::app::delete_reminder_handler),
+        )
+        .route(
             "/settings",
             get(controllers::settings::settings_form).post(controllers::settings::update_settings),
         )
@@ -102,19 +106,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .route("/verify-otp", post(controllers::auth::verify_otp))
         .route("/logout", get(controllers::auth::logout))
+        .route("/privacy", get(controllers::pages::privacy))
         .route("/health", get(health))
         .route("/users", get(get_users).post(create_user))
         .route(
             "/reminders",
             get(get_reminders).post(create_reminder_endpoint),
         )
-        .nest_service("/static", ServeDir::new(
-            if std::path::Path::new("static").exists() {
-                "static"  // Production (Docker)
+        .nest_service(
+            "/static",
+            ServeDir::new(if std::path::Path::new("static").exists() {
+                "static" // Production (Docker)
             } else {
-                "web/static"  // Development
-            }
-        ))
+                "web/static" // Development
+            }),
+        )
         .with_state(state);
 
     let listener = TcpListener::bind("0.0.0.0:8080").await?;
