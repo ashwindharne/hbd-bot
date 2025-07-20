@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block title %}HBD Bot - Never forget a birthday again{% endblock %} {%
+block nav %}
+<a href="/login" class="login-btn">Login</a>
+{% endblock %} {% block content %}
+<div class="landing-page">
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Never forget a birthday again</h1>
+            <p class="hero-subtitle">
+                Enter your friends' birthdays, and we'll text you reminders ahead of time so you
+                never miss celebrating the people you care about.
+            </p>
+            <a href="/login" class="cta-button">Get Started</a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Add Your Friends' Birthdays</h3>
+                <p>Easily add and manage all your friends' and family's birthdays in one place.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Daily Text Reminders</h3>
+                <p>
+                    Receive one convenient text per day with all upcoming birthdays so nothing falls
+                    through the cracks.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>Look Like You Remembered</h3>
+                <p>
+                    Get reminders days or weeks ahead of time so you can seem like you remembered
+                    all along.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to never miss another birthday?</h2>
+            <p>Join thousands of people who use HBD Bot to stay on top of important dates.</p>
+            <a href="/login" class="cta-button secondary">Start for Free</a>
+        </div>
+    </section>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="https://www.buymeacoffee.com/ashwindharne" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+    </div>
+</footer>
+
+{% endblock %}

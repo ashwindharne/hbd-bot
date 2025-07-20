@@ -1,14 +1,12 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Sign in or sign up - HBD Bot</title>
-        <link rel="stylesheet" href="/static/css/login.css" />
-    </head>
-    <body>
-        <div class="login-container">
-            <h1>Sign in or sign up</h1>
+{% extends "base.html" %}
+
+{% block title %}Sign in or sign up - HBD Bot{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <h1>Sign in or sign up</h1>
 
             <form id="loginForm">
                 <div class="phone-input-group">
@@ -60,14 +58,13 @@
                 <div id="result" class="result-message"></div>
             </form>
 
-            <div class="terms-section hidden" id="termsSection">
+            <div class="terms-section" id="termsSection">
                 By submitting, you authorize hbd.bot to text the number you provided with birthday
                 reminders using automated means. Message/data rates apply. Message frequency varies.
                 Text HELP for help or STOP to opt out. See
                 <a href="/privacy" id="privacyLink">Privacy Policy</a>.
-            </div>
         </div>
+</div>
 
-        <script src="/static/js/login.js"></script>
-    </body>
-</html>
+<script src="/static/js/login.js"></script>
+{% endblock %}

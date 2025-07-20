@@ -166,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
     isOtpMode = true;
     verificationSection.classList.remove("hidden");
     smsMessage.classList.remove("hidden");
-    document.getElementById("termsSection").classList.remove("hidden");
 
     // Format phone number as +1 323-123-1234
     const formatted = `+1 ${phone.substring(0, 3)}-${phone.substring(3, 6)}-${phone.substring(6)}`;
@@ -185,7 +184,6 @@ document.addEventListener("DOMContentLoaded", function () {
     isOtpMode = false;
     verificationSection.classList.add("hidden");
     smsMessage.classList.add("hidden");
-    document.getElementById("termsSection").classList.add("hidden");
     codeInput.value = "";
     resultDiv.innerHTML = "";
     submitBtn.textContent = "Login";

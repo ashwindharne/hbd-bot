@@ -34,6 +34,10 @@ pub struct EditTemplate {
     pub birthdate: String,
 }
 
+#[derive(Template)]
+#[template(path = "landing.html")]
+pub struct LandingTemplate;
+
 #[derive(Deserialize)]
 pub struct AddBirthdayForm {
     name: String,
@@ -47,26 +51,29 @@ pub struct EditBirthdayForm {
     birthdate: String,
 }
 
-pub async fn root(State(state): State<AppState>, jar: CookieJar) -> Result<Html<String>, Redirect> {
+pub async fn root(State(state): State<AppState>, jar: CookieJar) -> Html<String> {
     // Verify JWT cookie and get user ID
     let user_id = match verify_jwt_cookie(&jar, &state.config.jwt_secret) {
         Ok(user_id) => user_id,
         Err(_) => {
-            // Redirect to login if authentication fails
-            return Err(Redirect::to("/login"));
+            // Show landing page if authentication fails
+            let template = LandingTemplate;
+            return Html(template.render().unwrap());
         }
     };
 
     // Get user from database
-    match get_user_by_id(&state.db, user_id).await {
+    let _user = match get_user_by_id(&state.db, user_id).await {
         Ok(Some(user)) => user,
         Ok(None) => {
-            // User not found in database, redirect to login
-            return Err(Redirect::to("/login"));
+            // User not found in database, show landing page
+            let template = LandingTemplate;
+            return Html(template.render().unwrap());
         }
         Err(_) => {
-            // Database error, redirect to login
-            return Err(Redirect::to("/login"));
+            // Database error, show landing page
+            let template = LandingTemplate;
+            return Html(template.render().unwrap());
         }
     };
 
@@ -82,7 +89,7 @@ pub async fn root(State(state): State<AppState>, jar: CookieJar) -> Result<Html<
     // Render the app template with user data and reminders
     let template = AppTemplate { reminders };
 
-    Ok(Html(template.render().unwrap()))
+    Html(template.render().unwrap())
 }
 
 pub async fn add_form(
