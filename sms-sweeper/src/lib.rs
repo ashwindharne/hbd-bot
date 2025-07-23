@@ -197,12 +197,10 @@ fn get_reminders_to_send(
 
 fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
     let mut message = String::new();
-    let base_message = "hbd.bot - ";
-    let mut char_count = base_message.len();
-
+    let suffix = "\nhttps://hbd.bot";
     let mut included_count = 0;
 
-    for reminder in reminders {
+    for (i, reminder) in reminders.iter().enumerate() {
         let day_text = match reminder.days_until {
             0 => "today".to_string(),
             1 => "tomorrow".to_string(),
@@ -210,32 +208,88 @@ fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
         };
 
         let reminder_text = format!(
-            "{}'s {} is {}. ",
+            "{}'s {} is {}",
             reminder.name,
             ordinal_suffix(reminder.age_turning),
             day_text
         );
 
-        // Check if adding this reminder would exceed 160 chars
-        if char_count + reminder_text.len() > 160 {
+        // Calculate potential message lengths
+        let current_with_newline = if message.is_empty() {
+            reminder_text.clone()
+        } else {
+            format!("{}\n{}", message, reminder_text)
+        };
+        
+        let remaining_after_this = reminders.len() - i - 1;
+        
+        // Option 1: Add this reminder + suffix
+        let with_suffix = format!("{}{}", current_with_newline, suffix);
+        
+        if with_suffix.len() <= 160 {
+            // If this is the last reminder or we can fit everything, add it
+            if remaining_after_this == 0 {
+                message = current_with_newline;
+                included_count += 1;
+                break;
+            }
+            
+            // Check if we can fit the next reminder too
+            if remaining_after_this == 1 {
+                let next_reminder = &reminders[i + 1];
+                let next_day_text = match next_reminder.days_until {
+                    0 => "today".to_string(),
+                    1 => "tomorrow".to_string(),
+                    n => format!("in {} days", n),
+                };
+                let next_reminder_text = format!(
+                    "{}'s {} is {}",
+                    next_reminder.name,
+                    ordinal_suffix(next_reminder.age_turning),
+                    next_day_text
+                );
+                let with_next = format!("{}\n{}{}", current_with_newline, next_reminder_text, suffix);
+                
+                if with_next.len() <= 160 {
+                    // We can fit both, so add this one and continue to next iteration
+                    message = current_with_newline;
+                    included_count += 1;
+                    continue;
+                }
+            }
+            
+            // Check if we should show "+ X more..." instead
+            if remaining_after_this > 1 {
+                let more_text = format!("\n+ {} more...{}", remaining_after_this, suffix);
+                let with_more = format!("{}{}", current_with_newline, more_text);
+                
+                if with_more.len() <= 160 {
+                    message = current_with_newline;
+                    included_count += 1;
+                    break;
+                }
+            }
+            
+            // We can fit this reminder, add it and continue
+            message = current_with_newline;
+            included_count += 1;
+        } else {
+            // This reminder won't fit, stop here
             break;
         }
-
-        message.push_str(&reminder_text);
-        char_count += reminder_text.len();
-        included_count += 1;
     }
 
-    // Add "and X more" if there are more reminders
+    // Add suffix or "+ X more..." if there are remaining reminders
     let remaining = reminders.len() - included_count;
-    if remaining > 0 {
-        let more_text = format!("(and {} more)", remaining);
-        if char_count + more_text.len() <= 160 {
-            message.push_str(&more_text);
+    if remaining > 1 {
+        let more_text = format!("\n+ {} more...{}", remaining, suffix);
+        let final_message = format!("{}{}", message, more_text);
+        if final_message.len() <= 160 {
+            return final_message;
         }
     }
 
-    format!("{}{}", base_message, message)
+    format!("{}{}", message, suffix)
 }
 
 fn ordinal_suffix(n: i32) -> String {

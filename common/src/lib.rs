@@ -1,7 +1,7 @@
 use sqlx::{migrate::MigrateDatabase, sqlite::SqlitePool, Row, Sqlite};
 
 pub mod message_central;
-pub mod twilio;
+pub mod surge;
 pub use message_central::MessageCentralSendOTPData;
 
 pub struct DbUser {
@@ -155,11 +155,11 @@ pub async fn get_reminders_by_user_id(
     user_id: i64,
 ) -> Result<Vec<DbReminder>, sqlx::Error> {
     let reminders = sqlx::query(
-        "SELECT id, user_id, name, birthdate, created_at, updated_at 
-         FROM reminders 
-         WHERE user_id = ? 
-         ORDER BY 
-           CASE 
+        "SELECT id, user_id, name, birthdate, created_at, updated_at
+         FROM reminders
+         WHERE user_id = ?
+         ORDER BY
+           CASE
              WHEN strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch')) >= strftime('%m-%d', 'now')
              THEN strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch'))
              ELSE '13' || strftime('%m-%d', datetime(birthdate / 1000, 'unixepoch'))

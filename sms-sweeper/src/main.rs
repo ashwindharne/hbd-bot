@@ -1,15 +1,14 @@
 use chrono::Utc;
-use common::{init_database, twilio::TwilioClient, update_user_last_digest_at};
+use common::{init_database, surge::SurgeClient, update_user_last_digest_at};
 use log::{error, info};
 use sms_sweeper::get_birthday_messages;
 use std::env;
+use tokio::time::{sleep, Duration};
 
 #[derive(Clone)]
 struct Config {
     database_url: String,
-    twilio_sid: String,
-    twilio_auth_token: String,
-    twilio_phone_number: String,
+    surge_api_key: String,
 }
 
 impl Config {
@@ -17,12 +16,8 @@ impl Config {
         Ok(Config {
             database_url: env::var("DATABASE_URL")
                 .map_err(|_| "DATABASE_URL environment variable not set")?,
-            twilio_sid: env::var("TWILIO_SID")
-                .map_err(|_| "TWILIO_SID environment variable not set")?,
-            twilio_auth_token: env::var("TWILIO_SECRET")
-                .map_err(|_| "TWILIO_AUTH_TOKEN environment variable not set")?,
-            twilio_phone_number: env::var("TWILIO_PHONE_NUMBER")
-                .map_err(|_| "TWILIO_PHONE_NUMBER environment variable not set")?,
+            surge_api_key: env::var("SURGE_API_KEY")
+                .map_err(|_| "SURGE_API_KEY environment variable not set")?,
         })
     }
 }
@@ -41,17 +36,18 @@ async fn process_birthday_reminders(config: &Config) -> Result<(), Box<dyn std::
         return Ok(());
     }
 
-    // Initialize Twilio client
-    let client = TwilioClient::new(
-        config.twilio_sid.clone(),
-        config.twilio_auth_token.clone(),
-        config.twilio_phone_number.clone(),
-    );
+    // Initialize Surge client
+    let client = SurgeClient::new(config.surge_api_key.clone());
 
     let mut total_sms_sent = 0;
 
-    info!("Using Twilio client for sending SMS");
-    for sms_message in messages {
+    info!("Using Surge client for sending SMS");
+    for (i, sms_message) in messages.iter().enumerate() {
+        // Rate limit: sleep for 1 second between messages (except for the first one)
+        if i > 0 {
+            sleep(Duration::from_secs(1)).await;
+        }
+
         // Send SMS
         match send_sms_to_user(&client, &sms_message.phone_number, &sms_message.message).await {
             Ok(_) => {
@@ -73,7 +69,7 @@ async fn process_birthday_reminders(config: &Config) -> Result<(), Box<dyn std::
 }
 
 async fn send_sms_to_user(
-    client: &TwilioClient,
+    client: &SurgeClient,
     phone_number: &str,
     message: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
