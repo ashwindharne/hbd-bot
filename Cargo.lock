@@ -3197,6 +3197,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "sms-sweeper",
  "sqlx",
  "time",
  "tokio",

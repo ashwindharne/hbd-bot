@@ -25,6 +25,8 @@ pub struct Config {
     pub message_central_email: String,
     pub message_central_password_b64: String,
     pub jwt_secret: String,
+    pub admin_token: String,
+    pub surge_api_key: String,
 }
 
 impl Config {
@@ -39,6 +41,10 @@ impl Config {
             .map_err(|_| "MESSAGE_CENTRAL_PASSWORD_B64 environment variable not set")?;
         let jwt_secret =
             env::var("JWT_SECRET").map_err(|_| "JWT_SECRET environment variable not set")?;
+        let admin_token =
+            env::var("ADMIN_TOKEN").map_err(|_| "ADMIN_TOKEN environment variable not set")?;
+        let surge_api_key =
+            env::var("SURGE_API_KEY").map_err(|_| "SURGE_API_KEY environment variable not set")?;
 
         Ok(Config {
             database_url,
@@ -46,6 +52,8 @@ impl Config {
             message_central_email,
             message_central_password_b64,
             jwt_secret,
+            admin_token,
+            surge_api_key,
         })
     }
 }
@@ -108,6 +116,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/logout", get(controllers::auth::logout))
         .route("/privacy", get(controllers::pages::privacy))
         .route("/health", get(health))
+        .route(
+            "/run-sweeper",
+            post(controllers::sweeper::run_sweeper_handler),
+        )
         .route("/users", get(get_users).post(create_user))
         .route(
             "/reminders",

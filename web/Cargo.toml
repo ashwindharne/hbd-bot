@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 common = { path = "../common" }
+sms-sweeper = { path = "../sms-sweeper" }
 tokio = { version = "1", features = ["full"] }
 axum = { version = "0.8.4", features = ["json"] }
 axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }

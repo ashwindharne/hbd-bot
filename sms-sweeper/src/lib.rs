@@ -220,12 +220,12 @@ fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
         } else {
             format!("{}\n{}", message, reminder_text)
         };
-        
+
         let remaining_after_this = reminders.len() - i - 1;
-        
+
         // Option 1: Add this reminder + suffix
         let with_suffix = format!("{}{}", current_with_newline, suffix);
-        
+
         if with_suffix.len() <= 160 {
             // If this is the last reminder or we can fit everything, add it
             if remaining_after_this == 0 {
@@ -233,7 +233,7 @@ fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
                 included_count += 1;
                 break;
             }
-            
+
             // Check if we can fit the next reminder too
             if remaining_after_this == 1 {
                 let next_reminder = &reminders[i + 1];
@@ -248,8 +248,9 @@ fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
                     ordinal_suffix(next_reminder.age_turning),
                     next_day_text
                 );
-                let with_next = format!("{}\n{}{}", current_with_newline, next_reminder_text, suffix);
-                
+                let with_next =
+                    format!("{}\n{}{}", current_with_newline, next_reminder_text, suffix);
+
                 if with_next.len() <= 160 {
                     // We can fit both, so add this one and continue to next iteration
                     message = current_with_newline;
@@ -257,19 +258,19 @@ fn format_birthday_message(reminders: &[BirthdayReminder]) -> String {
                     continue;
                 }
             }
-            
+
             // Check if we should show "+ X more..." instead
             if remaining_after_this > 1 {
                 let more_text = format!("\n+ {} more...{}", remaining_after_this, suffix);
                 let with_more = format!("{}{}", current_with_newline, more_text);
-                
+
                 if with_more.len() <= 160 {
                     message = current_with_newline;
                     included_count += 1;
                     break;
                 }
             }
-            
+
             // We can fit this reminder, add it and continue
             message = current_with_newline;
             included_count += 1;
